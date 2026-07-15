@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>지원이 키우기</title>
+    <title>도비 키우기</title>
     <!-- Chart.js 라이브러리 추가 (그래프 구현용) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -246,8 +246,8 @@
 <body>
 
     <div class="game-container">
-        <h1>지원이 키우기</h1>
-        <p class="subtitle">지원이를 육성하여 무사히 졸업시키세요!</p>
+        <h1>도비 키우기</h1>
+        <p class="subtitle">도비를 육성하여 무사히 졸업시키세요!</p>
 
         <!-- 캐릭터 이미지 영역 -->
         <div class="character-box">
@@ -258,7 +258,7 @@
         <!-- 게임 상태 표시 -->
         <div class="status-box">
             <div class="level-title" id="level-display">Lv.1 고1 입학</div>
-            <div class="log-message" id="log-display">지원이의 고등학교 생활이 시작되었습니다!</div>
+            <div class="log-message" id="log-display">도비의 고등학교 생활이 시작되었습니다!</div>
         </div>
 
         <!-- 버튼 조작 -->
@@ -357,14 +357,14 @@
                 // 성공
                 currentLevel++;
                 successCount++;
-                logDisplay.textContent = "성공! 지원이가 한 단계 성장했습니다!";
+                logDisplay.textContent = "성공! 도비가 한 단계 성장했습니다!";
                 logDisplay.style.color = "#2563eb";
             } else {
                 // 실패 (Lv.1 미만 하락 방지)
                 failCount++;
                 if (currentLevel > 1) {
                     currentLevel--;
-                    logDisplay.textContent = "실패... 지원이가 슬럼프에 빠져 레벨이 하락했습니다.";
+                    logDisplay.textContent = "실패... 도비가 슬럼프에 빠져 레벨이 하락했습니다.";
                 } else {
                     logDisplay.textContent = "실패했지만, 1레벨 밑으로는 떨어지지 않습니다!";
                 }
@@ -378,7 +378,7 @@
 
             // 졸업 달성 처리
             if (currentLevel === 10) {
-                logDisplay.textContent = "축하합니다! 지원이가 무사히 학교를 졸업했습니다! 🎓";
+                logDisplay.textContent = "축하합니다! 도비가 무사히 학교를 졸업했습니다! 🎓";
                 logDisplay.style.color = "#059669";
                 enhanceBtn.textContent = "졸업 완료!";
                 enhanceBtn.disabled = true;
