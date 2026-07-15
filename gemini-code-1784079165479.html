@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지원이 키우기</title>
+    <!-- Chart.js 라이브러리 추가 (그래프 구현용) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            width: 380px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        /* 캐릭터 이미지 스타일링 */
+        .character-box {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 20px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #e2e8f0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8fafc;
+            position: relative;
+        }
+
+        .character-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.5s ease, transform 0.3s ease;
+        }
+
+        /* 졸업 학사모 이모지 연출 */
+        .grad-cap-overlay {
+            position: absolute;
+            top: 10px;
+            font-size: 50px;
+            display: none;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        /* 레벨 및 상태 정보 */
+        .status-box {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .level-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+
+        .log-message {
+            font-size: 14px;
+            min-height: 20px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* 버튼 영역 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        .sub-button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            flex: 1;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-enhance {
+            background-color: #3b82f6;
+            color: white;
+            font-size: 16px;
+        }
+
+        .btn-enhance:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-info {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-info:hover {
+            background-color: #cbd5e1;
+        }
+
+        .btn-graph {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-graph:hover {
+            background-color: #059669;
+        }
+
+        /* 모달 창 (확률표 & 그래프) */
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+
+        .current-row {
+            background-color: #eff6ff;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .btn-close {
+            width: 100%;
+            padding: 10px;
+            background-color: #64748b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-close:hover {
+            background-color: #475569;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            margin-bottom: 15px;
+        }
+
+        .stats-summary {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>지원이 키우기</h1>
+        <p class="subtitle">지원이를 육성하여 무사히 졸업시키세요!</p>
+
+        <!-- 캐릭터 이미지 영역 -->
+        <div class="character-box">
+            <img id="character-img" class="character-img" src="https://i.postimg.cc/WpwjFk6L/Smart-Select-20260715-092747-Samsung-Notes.jpg" alt="지원이 캐릭터">
+            <div id="grad-cap" class="grad-cap-overlay">🎓</div>
+        </div>
+
+        <!-- 게임 상태 표시 -->
+        <div class="status-box">
+            <div class="level-title" id="level-display">Lv.1 고1 입학</div>
+            <div class="log-message" id="log-display">지원이의 고등학교 생활이 시작되었습니다!</div>
+        </div>
+
+        <!-- 버튼 조작 -->
+        <div class="button-group">
+            <button class="btn btn-enhance" id="enhance-btn" onclick="enhance()">육성하기 (강화)</button>
+            <div class="sub-button-group">
+                <button class="btn btn-info" onclick="toggleModal('rate-modal', true)">확률표 보기</button>
+                <button class="btn btn-graph" onclick="openGraphModal()">그래프 보기</button>
+            </div>
+        </div>
+
+        <!-- 확률 모달 창 -->
+        <div class="modal-overlay" id="rate-modal">
+            <div class="modal-content">
+                <h2>단계별 강화 확률 정보</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>단계</th>
+                            <th>칭호</th>
+                            <th>성공 확률</th>
+                        </tr>
+                    </thead>
+                    <tbody id="probability-table">
+                        <!-- JS로 자동 생성됨 -->
+                    </tbody>
+                </table>
+                <button class="btn-close" onclick="toggleModal('rate-modal', false)">닫기</button>
+            </div>
+        </div>
+
+        <!-- 그래프 모달 창 -->
+        <div class="modal-overlay" id="graph-modal">
+            <div class="modal-content">
+                <h2>강화 성공 / 실패 기록</h2>
+                <div class="chart-container">
+                    <canvas id="enhanceChart"></canvas>
+                </div>
+                <div class="stats-summary" id="stats-summary">
+                    시도 횟수: 0회 | 성공률: 0%
+                </div>
+                <button class="btn-close" onclick="toggleModal('graph-modal', false)">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 레벨별 데이터
+        const levelData = [
+            { level: 1, title: "Lv.1 고1 입학", successRate: 100 },
+            { level: 2, title: "Lv.2 적응하는 중", successRate: 90 },
+            { level: 3, title: "Lv.3 첫 중간고사", successRate: 80 },
+            { level: 4, title: "Lv.4 동아리 부장", successRate: 70 },
+            { level: 5, title: "Lv.5 고2 진학", successRate: 60 },
+            { level: 6, title: "Lv.6 수능 준비생", successRate: 50 },
+            { level: 7, title: "Lv.7 예비 수험생", successRate: 40 },
+            { level: 8, title: "Lv.8 고3 수험생", successRate: 30 },
+            { level: 9, title: "Lv.9 D-Day 직전", successRate: 20 },
+            { level: 10, title: "Lv.10 ★학교 졸업★", successRate: 0 }
+        ];
+
+        let currentLevel = 1;
+        let successCount = 0;
+        let failCount = 0;
+        let chartInstance = null;
+
+        // Elements
+        const characterImg = document.getElementById('character-img');
+        const levelDisplay = document.getElementById('level-display');
+        const logDisplay = document.getElementById('log-display');
+        const enhanceBtn = document.getElementById('enhance-btn');
+        const gradCap = document.getElementById('grad-cap');
+
+        // 그래픽 채도 및 연출 업데이트 (1레벨 흑백 -> 10레벨 완전 컬러)
+        function updateCharacterVisual() {
+            const grayscaleValue = 100 - ((currentLevel - 1) * 11.11);
+            characterImg.style.filter = `grayscale(${grayscaleValue}%)`;
+
+            if (currentLevel === 10) {
+                gradCap.style.display = 'block';
+                characterImg.style.transform = 'scale(1.05)';
+            } else {
+                gradCap.style.display = 'none';
+                characterImg.style.transform = 'scale(1)';
+            }
+        }
+
+        // 육성(강화) 로직
+        function enhance() {
+            if (currentLevel >= 10) return;
+
+            const rate = levelData[currentLevel - 1].successRate;
+            const randomValue = Math.random() * 100;
+
+            if (randomValue < rate) {
+                // 성공
+                currentLevel++;
+                successCount++;
+                logDisplay.textContent = "성공! 지원이가 한 단계 성장했습니다!";
+                logDisplay.style.color = "#2563eb";
+            } else {
+                // 실패 (Lv.1 미만 하락 방지)
+                failCount++;
+                if (currentLevel > 1) {
+                    currentLevel--;
+                    logDisplay.textContent = "실패... 지원이가 슬럼프에 빠져 레벨이 하락했습니다.";
+                } else {
+                    logDisplay.textContent = "실패했지만, 1레벨 밑으로는 떨어지지 않습니다!";
+                }
+                logDisplay.style.color = "#dc2626";
+            }
+
+            // 화면 UI 갱신
+            levelDisplay.textContent = levelData[currentLevel - 1].title;
+            updateCharacterVisual();
+            renderTable();
+
+            // 졸업 달성 처리
+            if (currentLevel === 10) {
+                logDisplay.textContent = "축하합니다! 지원이가 무사히 학교를 졸업했습니다! 🎓";
+                logDisplay.style.color = "#059669";
+                enhanceBtn.textContent = "졸업 완료!";
+                enhanceBtn.disabled = true;
+                enhanceBtn.style.backgroundColor = "#94a3b8";
+            }
+        }
+
+        // 모달 열기/닫기
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        // 그래프 모달 열기 및 도넛 차트 그리기
+        function openGraphModal() {
+            toggleModal('graph-modal', true);
+            const total = successCount + failCount;
+            const successRatePercent = total > 0 ? ((successCount / total) * 100).toFixed(1) : 0;
+
+            document.getElementById('stats-summary').textContent = 
+                `총 시도: ${total}회 | 성공: ${successCount}회 | 실패: ${failCount}회 (성공률: ${successRatePercent}%)`;
+
+            const ctx = document.getElementById('enhanceChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy(); // 기존 차트 리셋
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['성공', '실패'],
+                    datasets: [{
+                        data: [successCount, failCount],
+                        backgroundColor: ['#3b82f6', '#ef4444'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 확률 표 생성
+        function renderTable() {
+            const tbody = document.getElementById('probability-table');
+            tbody.innerHTML = '';
+
+            levelData.forEach((data) => {
+                const row = document.createElement('tr');
+                if (data.level === currentLevel) {
+                    row.classList.add('current-row');
+                }
+
+                const rateText = data.level === 10 ? '최고 단계' : `${data.successRate}%`;
+
+                row.innerHTML = `
+                    <td>${data.level}</td>
+                    <td>${data.title}</td>
+                    <td>${rateText}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 초기화 실행
+        updateCharacterVisual();
+        renderTable();
+    </script>
+</body>
+</html>
